@@ -118,11 +118,6 @@ write_files:
 
 @task
 def bootstrap(node_name="nbviewer.ipython.org", key_name="main"):
-    # Get a token for this cluster
-    resp = requests.get(token_get_url)
-    discovery_url = resp.text
-    print("Using discovery URL: {}".format(discovery_url))
-
     # OpenStack defaults for region, used for the fleet metadata
     region = os.environ.get("OS_REGION_NAME", os.environ.get("OS_REGION"))
 
@@ -133,8 +128,7 @@ def bootstrap(node_name="nbviewer.ipython.org", key_name="main"):
 
     # This could easily be inside the loop if you need to create per node
     # configurations
-    cloud_config = cloud_config_template.format(discovery_url=discovery_url,
-                                                region=region)
+    cloud_config = cloud_config_template.format()
     temp_cc = tempfile.NamedTemporaryFile("w", delete=False)
     temp_cc.write(cloud_config)
     temp_cc.close()
@@ -142,9 +136,6 @@ def bootstrap(node_name="nbviewer.ipython.org", key_name="main"):
     node(node_name, user_data=temp_cc.name, key_name=key_name)
 
     os.remove(temp_cc.name)
-
-    print("Go to {} in your browser of choice,".format(discovery_url))
-    print("Then continuously hit REFRESH")
 
 @task
 def node(nodename="corenode",
