@@ -104,7 +104,7 @@ coreos:
         Requires=docker.service
         [Service]
         Restart=always
-        ExecStart=docker run -d --name nbcache rgbkrk/nbcache
+        ExecStart=/usr/bin/docker run -d --name nbcache rgbkrk/nbcache
         ExecStop=/usr/bin/docker kill nbcache
 write_files:
     # Only SSH keys are allowed
