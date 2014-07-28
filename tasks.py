@@ -83,7 +83,7 @@ coreos:
         [Service]
         Restart=always
         ExecStart=/usr/bin/docker run --rm --name %n -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT' ipython/nbviewer
-        ExecStop=/usr/bin/docker kill %n
+        ExecStop=/usr/bin/docker rm -f %n
     - name: nbviewer.2.service
       command: start
       content: |
@@ -94,7 +94,7 @@ coreos:
         [Service]
         Restart=always
         ExecStart=/usr/bin/docker run --rm --name %n -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT' ipython/nbviewer
-        ExecStop=/usr/bin/docker kill %n
+        ExecStop=/usr/bin/docker rm -f %n
     - name: nbcache.service
       command: start
       content: |
@@ -105,7 +105,7 @@ coreos:
         [Service]
         Restart=always
         ExecStart=/usr/bin/docker run -d --name nbcache rgbkrk/nbcache
-        ExecStop=/usr/bin/docker kill nbcache
+        ExecStop=/usr/bin/docker rm -f nbcache
 write_files:
     # Only SSH keys are allowed
     - path: /etc/ssh/sshd_config
