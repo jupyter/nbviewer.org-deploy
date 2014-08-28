@@ -58,8 +58,11 @@ FLAVORS = {
 }
 
 # OnMetal compute + CoreOS Developer
-default_image = COREOS_ONMETAL_DEVELOPER
-default_flavor = "onmetal-compute1"
+#default_image = COREOS_ONMETAL_DEVELOPER
+#default_flavor = "onmetal-compute1"
+
+default_image = COREOS_STABLE
+default_flavor = "performance2-15"
 
 nova_template = '''nova boot \
            --image {image_id} \
@@ -74,7 +77,7 @@ cloud_config_template = '''#cloud-config
 coreos:
   units:
     - name: nbviewer.1.service
-      command: start
+      enable: true
       content: |
         [Unit]
         Description=NotebookViewer
@@ -82,10 +85,12 @@ coreos:
         Requires=nbcache.service
         [Service]
         Restart=always
-        ExecStart=/usr/bin/docker run --rm --name %n -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT' ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT_11211_TCP_ADDR:11211' ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
+        [Install]
+        WantedBy=nbviewer.target
     - name: nbviewer.2.service
-      command: start
+      enable: true
       content: |
         [Unit]
         Description=NotebookViewer
@@ -93,10 +98,12 @@ coreos:
         Requires=nbcache.service
         [Service]
         Restart=always
-        ExecStart=/usr/bin/docker run --rm --name %n -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT' ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT_11211_TCP_ADDR:11211' ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
+        [Install]
+        WantedBy=nbviewer.target
     - name: nbcache.service
-      command: start
+      enable: true
       content: |
         [Unit]
         Description=NotebookCache
@@ -104,8 +111,10 @@ coreos:
         Requires=docker.service
         [Service]
         Restart=always
-        ExecStart=/usr/bin/docker run -d --name nbcache rgbkrk/nbcache
+        ExecStart=/usr/bin/docker run --rm --name nbcache rgbkrk/nbcache
         ExecStop=/usr/bin/docker rm -f nbcache
+        [Install]
+        WantedBy=nbviewer.target
 write_files:
     # Only SSH keys are allowed
     - path: /etc/ssh/sshd_config
