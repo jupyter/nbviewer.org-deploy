@@ -86,7 +86,7 @@ coreos:
         Requires=nbcache.service
         [Service]
         Restart=always
-        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT_11211_TCP_ADDR:11211' ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
         [Install]
         WantedBy=nbviewer.target
@@ -99,7 +99,7 @@ coreos:
         Requires=nbcache.service
         [Service]
         Restart=always
-        ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT_11211_TCP_ADDR:11211' ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
         [Install]
         WantedBy=nbviewer.target
