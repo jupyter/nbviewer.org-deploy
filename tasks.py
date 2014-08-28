@@ -29,8 +29,9 @@ COREOS_ALPHA  = "c3a4208a-3284-4e46-a99d-c29b56b457ba"
 COREOS_BETA   = "746ba067-035c-4dbb-91f6-39300a7f8a03"
 COREOS_STABLE = "4ca73331-5063-429f-8a27-70de5099e747"
 
-# The one and only image for CoreOS when OnMetal (on-demand raw metal)
+# OnMetal images for CoreOS
 COREOS_ONMETAL_DEVELOPER = "be25b5fd-4ed5-4297-a37a-b886b3546821"
+COREOS_ONMETAL_ALPHA = "c75cc3ad-3a55-446c-802f-082cac581e6b"
 
 
 ################################################################################
@@ -61,8 +62,8 @@ FLAVORS = {
 #default_image = COREOS_ONMETAL_DEVELOPER
 #default_flavor = "onmetal-compute1"
 
-default_image = COREOS_STABLE
-default_flavor = "performance2-15"
+default_image = COREOS_ONMETAL_ALPHA
+default_flavor = "onmetal-compute1"
 
 nova_template = '''nova boot \
            --image {image_id} \
