@@ -25,7 +25,7 @@ token_get_url = "https://discovery.etcd.io/new"
 # tools
 #
 ################################################################################
-COREOS_ALPHA  = "c3a4208a-3284-4e46-a99d-c29b56b457ba"
+COREOS_ALPHA  = "78a24bc3-2545-433b-8067-a5143c04a3c3"
 COREOS_BETA   = "746ba067-035c-4dbb-91f6-39300a7f8a03"
 COREOS_STABLE = "4ca73331-5063-429f-8a27-70de5099e747"
 
