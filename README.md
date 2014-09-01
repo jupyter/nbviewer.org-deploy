@@ -22,6 +22,14 @@ invoke bootstrap
 
 Now that we're on CoreOS, I suggest getting familiar with systemctl (systemd) and journalctl.
 
+Until [autodock](https://github.com/rgbkrk/autodock) is set and working, we'll have to do some things by hand.
+
+#### Fresh Docker Images
+
+```
+docker pull ipython/nbviewer
+```
+
 #### Tailing the logs
 
 ```
