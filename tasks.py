@@ -81,31 +81,33 @@ cloud_config_template = '''#cloud-config
 coreos:
   units:
     - name: nbcache.service
-        enable: true
-        content: |
-          [Unit]
-          Description=NotebookCache
-          After=docker.service
-          Requires=docker.service
-          [Service]
-          Restart=always
-          ExecStart=/usr/bin/docker run --rm --name nbcache rgbkrk/nbcache
-          ExecStop=/usr/bin/docker rm -f nbcache
-          [Install]
-          WantedBy=nbviewer.target
+      enable: true
+      content: |
+        [Unit]
+        Description=NotebookCache
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        Restart=always
+        ExecStartPre=/usr/bin/docker pull rgbkrk/nbcache
+        ExecStart=/usr/bin/docker run --rm --name nbcache rgbkrk/nbcache
+        ExecStop=/usr/bin/docker rm -f nbcache
+        [Install]
+        WantedBy=nbviewer.target
     - name: nbviewer.1.service
-        enable: true
-        content: |
-          [Unit]
-          Description=NotebookViewer
-          After=nbcache.service
-          Requires=nbcache.service
-          [Service]
-          Restart=always
-          ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
-          ExecStop=/usr/bin/docker rm -f %n
-          [Install]
-          WantedBy=nbviewer.target
+      enable: true
+      content: |
+        [Unit]
+        Description=NotebookViewer
+        After=nbcache.service
+        Requires=nbcache.service
+        [Service]
+        Restart=always
+        ExecStartPre=/usr/bin/docker pull ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
+        ExecStop=/usr/bin/docker rm -f %n
+        [Install]
+        WantedBy=nbviewer.target
     - name: nbviewer.2.service
       enable: true
       content: |
@@ -115,6 +117,7 @@ coreos:
         Requires=nbcache.service
         [Service]
         Restart=always
+        ExecStartPre=/usr/bin/docker pull ipython/nbviewer
         ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
         [Install]
@@ -129,7 +132,7 @@ write_files:
 '''
 
 @task
-def bootstrap(node_name="core.perf2.nbviewer.ipython.org", key_name="main"):
+def bootstrap(node_name="nbviewer.ipython.org", key_name="main"):
     # OpenStack defaults for region, used for the fleet metadata
     region = os.environ.get("OS_REGION_NAME", os.environ.get("OS_REGION"))
 
