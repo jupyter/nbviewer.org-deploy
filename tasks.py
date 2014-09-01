@@ -25,12 +25,13 @@ token_get_url = "https://discovery.etcd.io/new"
 # tools
 #
 ################################################################################
-COREOS_ALPHA  = "c3a4208a-3284-4e46-a99d-c29b56b457ba"
+COREOS_ALPHA  = "78a24bc3-2545-433b-8067-a5143c04a3c3"
 COREOS_BETA   = "746ba067-035c-4dbb-91f6-39300a7f8a03"
 COREOS_STABLE = "4ca73331-5063-429f-8a27-70de5099e747"
 
-# The one and only image for CoreOS when OnMetal (on-demand raw metal)
+# OnMetal images for CoreOS
 COREOS_ONMETAL_DEVELOPER = "be25b5fd-4ed5-4297-a37a-b886b3546821"
+COREOS_ONMETAL_ALPHA = "c75cc3ad-3a55-446c-802f-082cac581e6b"
 
 
 ################################################################################
@@ -57,9 +58,15 @@ FLAVORS = {
   "performance2-120": {"Memory_MB": 122880, "CPUs": 32},
 }
 
-# OnMetal compute + CoreOS Developer
-default_image = COREOS_ONMETAL_DEVELOPER
+# OnMetal compute + CoreOS Alpha
+default_image = COREOS_ONMETAL_ALPHA
 default_flavor = "onmetal-compute1"
+
+testing=True
+
+if(testing):
+    default_image = COREOS_STABLE
+    default_flavor = "performance2-15"
 
 nova_template = '''nova boot \
            --image {image_id} \
@@ -73,30 +80,8 @@ nova_template = '''nova boot \
 cloud_config_template = '''#cloud-config
 coreos:
   units:
-    - name: nbviewer.1.service
-      command: start
-      content: |
-        [Unit]
-        Description=NotebookViewer
-        After=nbcache.service
-        Requires=nbcache.service
-        [Service]
-        Restart=always
-        ExecStart=/usr/bin/docker run --rm --name %n -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT' ipython/nbviewer
-        ExecStop=/usr/bin/docker rm -f %n
-    - name: nbviewer.2.service
-      command: start
-      content: |
-        [Unit]
-        Description=NotebookViewer
-        After=nbcache.service
-        Requires=nbcache.service
-        [Service]
-        Restart=always
-        ExecStart=/usr/bin/docker run --rm --name %n -P --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" -e 'MEMCACHE_SERVERS=$NBCACHE_PORT' ipython/nbviewer
-        ExecStop=/usr/bin/docker rm -f %n
     - name: nbcache.service
-      command: start
+      enable: true
       content: |
         [Unit]
         Description=NotebookCache
@@ -104,16 +89,46 @@ coreos:
         Requires=docker.service
         [Service]
         Restart=always
-        ExecStart=/usr/bin/docker run -d --name nbcache rgbkrk/nbcache
+        ExecStartPre=/usr/bin/docker pull rgbkrk/nbcache
+        ExecStart=/usr/bin/docker run --rm --name nbcache rgbkrk/nbcache
         ExecStop=/usr/bin/docker rm -f nbcache
-write_files:
-    # Only SSH keys are allowed
-    - path: /etc/ssh/sshd_config
-      permissions: 0644
+        [Install]
+        WantedBy=nbviewer.target
+    - name: nbviewer.1.service
+      enable: true
       content: |
-        UsePrivilegeSeparation sandbox
-        Subsystem sftp internal-sftp
-        PasswordAuthentication no
+        [Unit]
+        Description=NotebookViewer
+        After=nbcache.service
+        Requires=nbcache.service
+        [Service]
+        Restart=always
+        ExecStartPre=/usr/bin/docker pull ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -p 8081:8080 --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
+        ExecStop=/usr/bin/docker rm -f %n
+        [Install]
+        WantedBy=nbviewer.target
+    - name: nbviewer.2.service
+      enable: true
+      content: |
+        [Unit]
+        Description=NotebookViewer
+        After=nbcache.service
+        Requires=nbcache.service
+        [Service]
+        Restart=always
+        ExecStartPre=/usr/bin/docker pull ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -p 8082:8080 --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
+        ExecStop=/usr/bin/docker rm -f %n
+        [Install]
+        WantedBy=nbviewer.target
+write_files:
+  - path: /etc/ssh/sshd_config
+    permissions: 0644
+    content: |
+      UsePrivilegeSeparation sandbox
+      Subsystem sftp internal-sftp
+      PasswordAuthentication no
 '''
 
 @task
