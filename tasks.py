@@ -62,11 +62,15 @@ FLAVORS = {
 default_image = COREOS_ONMETAL_ALPHA
 default_flavor = "onmetal-compute1"
 
-testing=True
+default_image = COREOS_STABLE
+default_flavor = "performance2-30"
 
-if(testing):
-    default_image = COREOS_STABLE
-    default_flavor = "performance2-15"
+
+#testing=True
+
+#if(testing):
+#    default_image = COREOS_STABLE
+#    default_flavor = "performance2-15"
 
 nova_template = '''nova boot \
            --image {image_id} \
@@ -89,9 +93,23 @@ coreos:
         Requires=docker.service
         [Service]
         Restart=always
-        ExecStartPre=/usr/bin/docker pull rgbkrk/nbcache
-        ExecStart=/usr/bin/docker run --rm --name nbcache rgbkrk/nbcache
+        ExecStartPre=/usr/bin/docker pull jupyter/nbcache
+        ExecStart=/usr/bin/docker run --rm --name nbcache jupyter/nbcache
         ExecStop=/usr/bin/docker rm -f nbcache
+        [Install]
+        WantedBy=nbviewer.target
+    - name: nbindex.service
+      enable: true
+      content: |
+        [Unit]
+        Description=NotebookIndex
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        Restart=always
+        ExecStartPre=/usr/bin/docker pull jupyter/nbindex
+        ExecStart=/usr/bin/docker run --rm --name nbindex -v /mnt/nbindex/:/data -p 127.0.0.1:9200:9200 -p 127.0.0.1:9300:9300 jupyter/nbindex
+        ExecStop=/usr/bin/docker rm -f nbindex
         [Install]
         WantedBy=nbviewer.target
     - name: nbviewer.1.service
@@ -104,7 +122,7 @@ coreos:
         [Service]
         Restart=always
         ExecStartPre=/usr/bin/docker pull ipython/nbviewer
-        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -p 8081:8080 --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.1.service -p 8081:8080 --link nbindex:nbindex --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
         [Install]
         WantedBy=nbviewer.target
@@ -118,7 +136,7 @@ coreos:
         [Service]
         Restart=always
         ExecStartPre=/usr/bin/docker pull ipython/nbviewer
-        ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -p 8082:8080 --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
+        ExecStart=/usr/bin/docker run --rm --name nbviewer.2.service -p 8082:8080 --link nbindex:nbindex --link nbcache:nbcache -e "GITHUB_OAUTH_KEY=8656da24f5727829853b" -e "GITHUB_OAUTH_SECRET=041402fb0a4f7f1ac87696e5a22892060408b415" ipython/nbviewer
         ExecStop=/usr/bin/docker rm -f %n
         [Install]
         WantedBy=nbviewer.target
