@@ -30,9 +30,9 @@ COREOS_BETA   = "746ba067-035c-4dbb-91f6-39300a7f8a03"
 COREOS_STABLE = "4ca73331-5063-429f-8a27-70de5099e747"
 
 # OnMetal images for CoreOS
-COREOS_ONMETAL_DEVELOPER = "be25b5fd-4ed5-4297-a37a-b886b3546821"
-COREOS_ONMETAL_ALPHA = "c75cc3ad-3a55-446c-802f-082cac581e6b"
-
+COREOS_ONMETAL_ALPHA  = "f08e095c-9098-4a10-bbed-0394b40bb90f"
+COREOS_ONEMTAL_BETA   = "87b95448-111f-4406-a048-6f12f93ead5d"
+COREOS_ONMETAL_STABLE = "85e3d8d2-6d0f-4ded-bd55-0f13d3e57e69"
 
 ################################################################################
 # FLAVORS!
