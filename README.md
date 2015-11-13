@@ -1,46 +1,44 @@
-nbviewer-deploy
-===============
+# nbviewer-deploy
 
-All the bits to put nbviewer in the cloud
+Tasks for running nbviewer in docker
 
-Structural differences from our previous setup:
+### Setting your env
 
-* Main system is [CoreOS](https://coreos.com/)
-* We're using [bare metal](http://www.rackspace.com/cloud/servers/onmetal/) + [Docker containers](https://www.docker.com/)
-* The memcached instance is shared amongst the N instances of the Notebook Viewer app
-* Starting from scratch involves the use of the invokefile (tasks.py)
+Make sure you have your docker env set up, for instance:
+
+```
+source novarc
+eval `carina env nbviewer`
+```
 
 ### Booting from scratch
 
-Assuming the right OpenStack/Rackspace environment variables are set, simply run
+Assuming the right docker environment is set above, run
 
 ```
-invoke bootstrap
+invoke bootstrap -n 2
 ```
 
-### Tool suite
+to start a new deployment of nbviewer with two instances.
 
-Now that we're on CoreOS, I suggest getting familiar with systemctl (systemd) and journalctl.
 
-Until [autodock](https://github.com/rgbkrk/autodock) is set and working, we'll have to do some things by hand.
+### Upgrading
 
-#### Fresh Docker Images
-
-```
-docker pull ipython/nbviewer
-```
-
-#### Tailing the logs
+To upgrade the deployment in-place:
 
 ```
-journalctl -f
+invoke upgrade
 ```
 
+This will pull new images from DockerHub, take down nodes one at a time, and bring new ones up in their places.
 
-#### Restart app servers
+TODO: we should actually bring up new nodes on *new* ports and add them to fastly before removing the old ones.
+
+### Restart
+
+To relaunch the current instances without any other changes:
 
 ```
-sudo systemctl restart nbviewer.1.service
-sudo systemctl restart nbviewer.2.service
+invoke restart
 ```
 
