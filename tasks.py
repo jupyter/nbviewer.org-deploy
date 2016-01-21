@@ -67,6 +67,10 @@ def nbviewer(port=0, image=NBVIEWER):
         '--link', '%s:nbcache' % nbcache_id,
         '-p', '%i:8080' % port,
         image,
+        'python3', '-m', 'nbviewer',
+        '--port=8080',
+        '--cache_expiry_min=1800',
+        '--cache_expiry_max=6000',
     ])), echo=True)
     return port
 
