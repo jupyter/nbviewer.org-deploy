@@ -26,7 +26,7 @@ NBCACHE = 'jupyter/nbcache'
 def docker_client():
     """Get a docker client instance"""
     docker = Client(**kwargs_from_env())
-    # docker.verify = False # FIXME: Carina CA verification isn't working for some reason
+    docker.verify = False # FIXME: Carina CA verification isn't working for some reason
     return docker
 
 @task
