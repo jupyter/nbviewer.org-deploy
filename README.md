@@ -15,7 +15,7 @@ Tasks for running nbviewer in docker
 Make sure you have your docker env set up, for instance:
 
 ```
-source novarc
+source creds
 eval `carina env nbviewer`
 ```
 
