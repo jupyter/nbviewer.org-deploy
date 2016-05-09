@@ -38,7 +38,7 @@ def cluster(name='nbviewer'):
 @task
 def nbcache():
     """Start the nbcache service"""
-    run("docker run -d --label nbcache --name nbcache --restart on-failure:3 %s" % NBCACHE)
+    run("docker run -d --label nbcache --name nbcache --restart always %s" % NBCACHE)
 
 @task
 def nbviewer(port=0, image=NBVIEWER):
@@ -64,7 +64,7 @@ def nbviewer(port=0, image=NBVIEWER):
     run(' '.join(map(pipes.quote, ['docker', 'run', '-d',
         '--env-file', 'env_file',
         '--label', 'nbviewer',
-        '--restart', 'on-failure:3',
+        '--restart', 'always',
         '--link', '%s:nbcache' % nbcache_id,
         '-p', '%i:8080' % port,
         image,
