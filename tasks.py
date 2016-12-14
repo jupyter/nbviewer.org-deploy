@@ -41,7 +41,7 @@ def nbcache(ctx):
     run("docker run -d --label nbcache --name nbcache --restart always %s" % NBCACHE)
 
 @task
-def nbviewer(ctx, port=0, image=NBVIEWER):
+def nbviewer(ctx, port=0, image='nbviewer'):
     """Start one nbviewer instance"""
     docker = docker_client()
     containers = docker.containers(filters={'label': 'nbcache'})
@@ -68,7 +68,9 @@ def nbviewer(ctx, port=0, image=NBVIEWER):
         '--link', '%s:nbcache' % nbcache_id,
         '-p', '%i:8080' % port,
         image,
-        'python3', '-m', 'nbviewer',
+        'newrelic-admin', 'run-python',
+        '-m', 'nbviewer',
+        '--logging=debug',
         '--port=8080',
         '--cache_expiry_min=1800',
         '--cache_expiry_max=6000',
@@ -84,9 +86,15 @@ def pull(ctx, images=','.join([NBVIEWER, NBCACHE])):
         run('docker pull %s' % img)
 
 @task
+def build(ctx):
+    """Build nbviewer image"""
+    run('docker build -t nbviewer .')
+
+@task
 def bootstrap(ctx, n=2):
     """Set up a new cluster with nbcache, nbviewer"""
     pull(ctx)
+    build(ctx)
     nbcache(ctx)
     ports = []
     for i in range(n):
@@ -114,6 +122,7 @@ def upgrade(ctx, yes=False):
     NOTE: This destroys the old instances, so don't forget to download their logs first if you need them.
     """
     pull(ctx)
+    build(ctx)
     docker = docker_client()
     containers = docker.containers(filters={'label': 'nbviewer'})
     if not yes:
