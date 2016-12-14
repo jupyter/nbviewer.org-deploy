@@ -30,23 +30,23 @@ def docker_client():
     return docker
 
 @task
-def cluster(name='nbviewer'):
+def cluster(ctx, name='nbviewer'):
     """Make a new carina cluster to run on"""
     run("carina create %s" % name)
     print("You can now use this cluster with:\n  eval `carina env %s`" % name)
 
 @task
-def nbcache():
+def nbcache(ctx):
     """Start the nbcache service"""
     run("docker run -d --label nbcache --name nbcache --restart always %s" % NBCACHE)
 
 @task
-def nbviewer(port=0, image=NBVIEWER):
+def nbviewer(ctx, port=0, image=NBVIEWER):
     """Start one nbviewer instance"""
     docker = docker_client()
     containers = docker.containers(filters={'label': 'nbcache'})
     if not containers:
-        nbcache()
+        nbcache(ctx)
     containers = docker.containers(filters={'label': 'nbcache'})
     nbcache_id = containers[0]['Id']
     
@@ -76,7 +76,7 @@ def nbviewer(port=0, image=NBVIEWER):
     return port
 
 @task
-def pull(images=','.join([NBVIEWER, NBCACHE])):
+def pull(ctx, images=','.join([NBVIEWER, NBCACHE])):
     """Pull any updates to images from DockerHub"""
     for img in images.split(','):
         if '/' not in img:
@@ -84,13 +84,13 @@ def pull(images=','.join([NBVIEWER, NBCACHE])):
         run('docker pull %s' % img)
 
 @task
-def bootstrap(n=2):
+def bootstrap(ctx, n=2):
     """Set up a new cluster with nbcache, nbviewer"""
-    pull()
-    nbcache()
+    pull(ctx)
+    nbcache(ctx)
     ports = []
     for i in range(n):
-        ports.append(nbviewer())
+        ports.append(nbviewer(ctx))
     print("Started %i nbviewer instances on ports %s" % (n, ports))
 
 def wait_up(url):
@@ -108,12 +108,12 @@ def wait_up(url):
     raise RuntimeError("nbviewer never showed up at %s" % url)
 
 @task
-def upgrade(yes=False):
+def upgrade(ctx, yes=False):
     """Update images and redeploy
     
     NOTE: This destroys the old instances, so don't forget to download their logs first if you need them.
     """
-    pull()
+    pull(ctx)
     docker = docker_client()
     containers = docker.containers(filters={'label': 'nbviewer'})
     if not yes:
@@ -132,14 +132,14 @@ def upgrade(yes=False):
         print("Relaunching %s at %s:%i" % (id[:7], ip, port))
         docker.stop(id)
         docker.remove_container(id)
-        nbviewer(port)
+        nbviewer(ctx, port)
         url = 'http://%s:%i' % (ip, port)
         wait_up(url)
         ports.append(port)
     print("Upgraded %i instances at %s" % (len(containers), ports))
 
 @task
-def restart():
+def restart(ctx):
     """Restart the current nbviewer instances"""
     docker = docker_client()
     containers = docker.containers(all=True, filters={'label': 'nbviewer'})
@@ -149,7 +149,7 @@ def restart():
         docker.restart(c['Id'])
 
 @task
-def cleanup():
+def cleanup(ctx):
     """Cleanup stopped containers"""
     docker = docker_client()
     containers = docker.containers(filters={'label': 'nbviewer', 'status': 'exited'})

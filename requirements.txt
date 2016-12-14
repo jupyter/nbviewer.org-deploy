@@ -1,3 +1,3 @@
-invoke
+invoke>=0.13
 docker-py
 requests
