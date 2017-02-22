@@ -67,6 +67,7 @@ def nbviewer(ctx, port=0, image='nbviewer'):
         '--restart', 'always',
         '--link', '%s:nbcache' % nbcache_id,
         '-p', '%i:8080' % port,
+        '--name', 'nbviewer-%i' % port,
         image,
         'newrelic-admin', 'run-python',
         '-m', 'nbviewer',
