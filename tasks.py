@@ -73,8 +73,8 @@ def nbviewer(ctx, port=0, image='nbviewer'):
         '-m', 'nbviewer',
         '--logging=info',
         '--port=8080',
-        '--cache_expiry_min=1800',
-        '--cache_expiry_max=6000',
+        '--cache_expiry_min=3600',
+        '--cache_expiry_max=14400',
     ])), echo=True)
     return port
 
