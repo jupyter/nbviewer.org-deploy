@@ -71,7 +71,7 @@ def nbviewer(ctx, port=0, image='nbviewer'):
         image,
         'newrelic-admin', 'run-python',
         '-m', 'nbviewer',
-        '--logging=debug',
+        '--logging=info',
         '--port=8080',
         '--cache_expiry_min=1800',
         '--cache_expiry_max=6000',
