@@ -11,6 +11,7 @@ assumes Docker env is already set up, e.g. via
 
 from __future__ import print_function
 
+import json
 import pipes
 import sys
 import time
@@ -169,3 +170,22 @@ def cleanup(ctx):
         id = c['Id']
         print("Removing %s" % id[:7])
         docker.remove_container(id)
+
+@task
+def statuspage(ctx):
+    docker = docker_client()
+    stream = docker.build('statuspage', tag='nbviewer-statuspage', pull=True)
+    for chunk in stream:
+        for line in chunk.decode('utf8', 'replace').splitlines(True):
+            info = json.loads(line)
+            sys.stdout.write(info.get('stream', ''))
+    containers = docker.containers(all=True, filters={'name': 'nbviewer-statuspage'})
+    [ docker.remove_container(c['Id'], force=True) for c in containers ]
+    run(' '.join(map(pipes.quote, ['docker', 'run',
+        '-d', '-t',
+        '--restart=always',
+        '--env-file=env_file',
+        '--env-file=env_statuspage',
+        '--name=nbviewer-statuspage',
+        'nbviewer-statuspage'
+    ])))
