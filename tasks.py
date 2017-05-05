@@ -18,7 +18,7 @@ import time
 
 import requests
 from invoke import run, task
-from docker import Client
+from docker import APIClient as Client
 from docker.utils import kwargs_from_env
 
 NBVIEWER = 'jupyter/nbviewer'
