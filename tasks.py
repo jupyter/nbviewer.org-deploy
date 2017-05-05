@@ -27,14 +27,7 @@ NBCACHE = 'jupyter/nbcache'
 def docker_client():
     """Get a docker client instance"""
     docker = Client(**kwargs_from_env())
-    docker.verify = False # FIXME: Carina CA verification isn't working for some reason
     return docker
-
-@task
-def cluster(ctx, name='nbviewer'):
-    """Make a new carina cluster to run on"""
-    run("carina create %s" % name)
-    print("You can now use this cluster with:\n  eval `carina env %s`" % name)
 
 @task
 def nbcache(ctx):

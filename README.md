@@ -4,7 +4,6 @@ Tasks for running nbviewer in docker
 
 ### Dependencies
 
-- [carina](https://getcarina.com/docs/getting-started/getting-started-carina-cli/)
 - Python dependencies:
 
        pip install -r requirements.txt
@@ -16,7 +15,6 @@ Make sure you have your docker env set up, for instance:
 
 ```
 source creds
-eval `carina env nbviewer`
 ```
 
 ### Booting from scratch
