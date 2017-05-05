@@ -1,18 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 Deploys nbviewer on docker
 
-assumes Docker env is already set up, e.g. via
+Two pieces:
 
-    source novarc
-    eval `carina env nbviewer`
-'''
+First set of commands help setup nbviewer servers on Rackspace:
+
+    servers, ssh, github_ssh, rsync, remote_upgrade, doitall
+
+Second set are for deploying nbviewer with docker
+(assumes docker env is already setup):
+
+    build, pull, nbviewer, upgrade, bootstrap, etc.
+"""
 
 from __future__ import print_function
 
+from datetime import date
+from functools import lru_cache
 import json
+import os
 import pipes
+from subprocess import Popen, PIPE, check_output
 import sys
 import time
 
@@ -21,9 +31,134 @@ from invoke import run, task
 from docker import APIClient as Client
 from docker.utils import kwargs_from_env
 
+
 NBVIEWER = 'jupyter/nbviewer'
 NBCACHE = 'jupyter/nbcache'
+HERE = os.path.dirname(os.path.abspath(__file__))
 
+#------- Local commands for managing rackspace servers --------
+
+@lru_cache()
+def rackspace_client():
+    from rackspace.connection import Connection
+    
+    creds = {}
+    with open('creds') as f:
+        exec(f.read(), creds)
+    return Connection(
+        username=creds['OS_USERNAME'],
+        api_key=creds['OS_PASSWORD'],
+        region='DFW',
+    )
+
+
+@lru_cache()
+def nbviewer_servers():
+    c = rackspace_client()
+    return list(c.compute.servers(name='nbviewer'))
+
+
+@task
+def github_ssh(ctx, usernames, servername=None):
+    """Grant one or more user's GitHub ssh keys access to root on the given server
+    
+    servername can be a blob, so any matching server will grant access
+    Default servername: 'nbviewer' so all nbviewer servers are
+    """
+    if not servername:
+        servers = list(nbviewer_servers())
+    else:
+        servers = list(rackspace_client().compute.servers(name=servername))
+    
+    for username in usernames.split(','):
+        _github_ssh(username, servers)
+
+
+def _github_ssh(username, servers):
+    # get keys from GitHub:
+    r = requests.get('https://github.com/{}.keys'.format(username))
+    r.raise_for_status()
+    keys = r.content
+
+    for server in servers:
+        print("Giving {}@github SSH access to {} ({})".format(username, server.name, server.access_ipv4))
+        ssh = ['ssh', 'root@%s' % server.access_ipv4]
+        authorized_keys = check_output(ssh + ['cat /root/.ssh/authorized_keys']).decode('utf8', 'replace')
+        if '@{}'.format(username) in authorized_keys:
+            print("  {} already has access to {}".format(username, server.name))
+            # TODO: instead of skipping found users, replace existing keys
+            continue
+        print("  Uploading {}'s keys".format(username))
+        p = Popen(ssh + ['cat >> /root/.ssh/authorized_keys'], stdin=PIPE)
+        p.stdin.write('# GitHub keys for @{} ({})\n'.format(username, date.today()).encode('utf8'))
+        p.stdin.write(keys)
+        if not keys.endswith(b'\n'):
+            p.stdin.write(b'\n')
+        p.stdin.close()
+        p.wait()
+
+
+@task
+def ssh(ctx, name):
+    """SSH to a rackspace server by name"""
+    # match name exactly:
+    exact_name = "^{}$".format(name)
+    server = next(rackspace_client().compute.servers(name=exact_name), None)
+    if server is None:
+        ctx.exit("Server {} not found".format(name))
+    print("SSHing to {} ({})".format(server.name, server.access_ipv4))
+    ctx.run('ssh root@{}'.format(server.access_ipv4), pty=True, echo=True)
+
+
+@task
+def servers(ctx):
+    """Print the names of current nbviewer servers"""
+    for server in nbviewer_servers():
+        print(server.name)
+
+@task
+def rsync(ctx):
+    """Send the current state of this repo to nbviewer servers"""
+    for server in nbviewer_servers():
+        cmd = ['rsync', '-varuP', '--delete',
+            HERE + '/',
+            'root@{}:/srv/nbviewer-deploy/'.format(server.access_ipv4),
+        ]
+        ctx.run(' '.join(map(pipes.quote, cmd)), echo=True)
+
+
+UPGRADE_SH = """
+set -e
+export PATH=/opt/conda/bin:$PATH
+cd /srv/nbviewer-deploy
+pip install --upgrade -r requirements.txt
+invoke upgrade
+"""
+
+@task
+def upgrade_remote(ctx):
+    for server in nbviewer_servers():
+        ctx.run('ssh root@{} "{}"'.format(server.access_ipv4, UPGRADE_SH), pty=True, echo=True)
+
+
+@task
+def doitall(ctx):
+    """Run a full upgrade from your laptop.
+    
+    This does:
+    
+    1. git pull
+    2. invoke rsync
+    3. invoke upgrade_remote
+    """
+    # make sure current repo
+    ctx.run('git pull', echo=True)
+    rsync(ctx)
+    upgrade_remote(ctx)
+
+#------- Docker commands for running --------
+
+@lru_cache()
 def docker_client():
     """Get a docker client instance"""
     docker = Client(**kwargs_from_env())

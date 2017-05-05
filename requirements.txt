@@ -1,3 +1,4 @@
+rackspacesdk
 invoke>=0.13
 docker
 requests
