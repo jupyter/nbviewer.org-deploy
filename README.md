@@ -39,7 +39,7 @@ Two steps are **not automated**:
   2. install docker (follow Docker's own instructions)
   3. clone this repo in `/srv/nbviewer-deploy`
   4. setup letsencrypt (TODO: docs)
-- Load-balancing is handled in fastly. If a new nbviewer instance is added, fastly must be
+- Load-balancing is handled in fastly. If a new nbviewer server or instance is added, fastly must be
   told manually about the new host. Fastly has an API, so this can be automated in the future, but
   is not yet.
 

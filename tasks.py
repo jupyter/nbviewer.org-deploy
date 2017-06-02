@@ -36,15 +36,15 @@ NBVIEWER = 'jupyter/nbviewer'
 NBCACHE = 'jupyter/nbcache'
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+creds = {}
+with open('creds') as f:
+    exec(f.read(), creds)
 #------- Local commands for managing rackspace servers --------
 
 @lru_cache()
 def rackspace_client():
     from rackspace.connection import Connection
     
-    creds = {}
-    with open('creds') as f:
-        exec(f.read(), creds)
     return Connection(
         username=creds['OS_USERNAME'],
         api_key=creds['OS_PASSWORD'],
@@ -57,6 +57,10 @@ def nbviewer_servers():
     c = rackspace_client()
     return list(c.compute.servers(name='nbviewer'))
 
+@task
+def trigger_build(ctx):
+    url_base = "https://registry.hub.docker.com/u/jupyter/nbviewer/trigger/{}/" 
+    requests.post(url=url_base.format(creds['DOCKER_TRIGGER_TOKEN']), data="build=true")
 
 @task
 def github_ssh(ctx, usernames, servername=None):
