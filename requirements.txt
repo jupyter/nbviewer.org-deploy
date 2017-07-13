@@ -2,3 +2,4 @@ rackspacesdk
 invoke>=0.13
 docker
 requests
+python-docker-machine

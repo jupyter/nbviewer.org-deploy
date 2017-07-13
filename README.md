@@ -27,13 +27,7 @@ There will be a confirmation prompt once it gets to the destructive action of de
 
 ## Current deployment
 
-Right now, nbviewer is run on Rackspace servers on the Jupyter account, with the names 'nbviewer-3' and 'nbviewer-4'.
-
-One step is **not automated**:
-
-- Load-balancing is handled in fastly. If a new nbviewer server or instance is added, fastly must be
-  told manually about the new host. Fastly has an API, so this can be automated in the future, but
-  is not yet.
+Right now, nbviewer is run on Rackspace servers on the Jupyter account, with the names 'nbviewer-N'.
 
 On each server, there are two nbviewer workers and one memcache instance. One server is additionally running the statuspage daemon to send stats to https://status.jupyter.org,
 started with
@@ -87,7 +81,7 @@ To upgrade the deployment in-place:
 invoke upgrade
 ```
 
-This will pull new images from DockerHub, take down nodes one at a time, and bring new ones up in their places.
+This will pull new images from DockerHub, take down containers one at a time, and bring new ones up in their places.
 
 TODO: we should actually bring up new nodes on *new* ports and add them to fastly before removing the old ones.
 
@@ -98,11 +92,4 @@ To relaunch the current instances without any other changes:
 ```
 invoke restart
 ```
-
-
-## TODO
-
-Improvements I would like to see:
-
-- script fastly API, so that old instances don't need to be destroyed before creating new ones
 

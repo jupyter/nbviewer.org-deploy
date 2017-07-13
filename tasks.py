@@ -30,6 +30,7 @@ join = os.path.join
 from invoke import run, task
 from docker import APIClient as Client
 from docker.utils import kwargs_from_env
+from machine import Machine
 import requests
 
 
@@ -122,6 +123,10 @@ def servers(ctx):
     for server in nbviewer_servers():
         print(server.name, server.access_ipv4)
 
+def docker_machines(ctx):
+    """Get list of docker-machine names"""
+    return ctx.run('docker-machine ls -q', hide='out').stdout.split()
+
 @task
 def doitall(ctx):
     """Run a full upgrade from your laptop.
@@ -133,14 +138,13 @@ def doitall(ctx):
     """
     # make sure current repo is up to date
     ctx.run('git pull', echo=True)
-    r = ctx.run('docker-machine ls -q', hide='out')
-    machines = r.stdout.split()
-    for machine in machines:
+    for machine in docker_machines(ctx):
         ctx.run("""
         set -e
         eval $(docker-machine env %s)
         invoke upgrade
         """ % machine, echo=True)
+    fastly(ctx)
 
 #------- Docker commands for running nbviewer --------
 
@@ -318,3 +322,125 @@ def statuspage(ctx):
         '--name=nbviewer-statuspage',
         'nbviewer-statuspage'
     ])))
+
+#------- Fastly commands for updating the CDN --------
+
+FASTLY_API = 'https://api.fastly.com'
+
+class FastlyService:
+    def __init__(self, api_key, service_id):
+        self.session = requests.Session()
+        self.session.headers['Fastly-Key'] = api_key
+        self.service_id = service_id
+        latest_version = self.versions()[-1]
+        self.version = latest_version['number']
+        if latest_version['active']:
+            # don't have an inactive version yet
+            self.api_request('/clone', method='PUT')
+            latest_version = self.versions()[-1]
+            self.version = latest_version['number']
+
+    
+    def api_request(self, path, include_version=True, method='GET', **kwargs):
+        url = "{api}/service/{service_id}{v}{path}".format(
+            api=FASTLY_API,
+            service_id=self.service_id,
+            v='/version/%i' % self.version if include_version else '',
+            path=path,
+        )
+        r = self.session.request(method, url, **kwargs)
+        try:
+            r.raise_for_status()
+        except Exception:
+            print(r.text)
+            raise
+        return r.json()
+    
+    def backends(self):
+        return self.api_request('/backend')
+    
+    def versions(self):
+        return self.api_request('/version', include_version=False)
+    
+    def add_backend(self, name, hostname, port, copy_backend=None):
+        if copy_backend is None:
+            copy_backend = self.backends()[0]
+        data = {
+            key: copy_backend[key]
+            for key in [
+                'healthcheck',
+                'max_conn',
+                'weight',
+                'error_threshold',
+                'connect_timeout',
+                'between_bytes_timeout',
+                'first_byte_timeout',
+                'auto_loadbalance',
+                
+            ]
+        }
+        data.update({
+            'address': hostname,
+            'name': name,
+            'port': port,
+        })
+        self.api_request('/backend', method='POST', data=data)
+    
+    def remove_backend(self, name):
+        self.api_request('/backend/%s' % name, method='DELETE')
+    
+    def deploy(self):
+        # activate the current version
+        self.api_request('/activate', method='PUT')
+        # clone to a new version
+        self.api_request('/clone', method='PUT')
+        self.version = self.versions()[-1]['number']
+
+
+def all_instances():
+    """Return {(ip, port) : name} for all nbviewer containers on all machines"""
+    all_nbviewers = {}
+    docker_machine = Machine()
+    for m in docker_machine.ls():
+        name = m['Name']
+        if not name:
+            # weird bug where it gets an extra empty entry
+            continue
+        ip = docker_machine.inspect(name)['Driver']['IPAddress']
+        docker = Client(**docker_machine.config(name))
+        for c in docker.containers(filters={'label': 'nbviewer'}, all=True):
+            port = c['Ports'][0]['PublicPort']
+            all_nbviewers[(ip, port)] = '%s-%s' % (name, port)
+    return all_nbviewers
+
+@task
+def fastly(ctx):
+    """Update the fastly CDN"""
+    print("Checking fastly backends")
+    f = FastlyService(creds['FASTLY_KEY'], creds['FASTLY_SERVICE_ID'])
+    changed = False
+    backends = f.backends()
+    nbviewers = all_instances()
+    existing_backends = set()
+    # first, delete the backends we don't want
+    copy_backend = backends[0]
+    for backend in backends:
+        host = (backend['ipv4'], backend['port'])
+        if host not in nbviewers:
+            print("Deleting backend %s" % backend['name'])
+            f.remove_backend(backend['name'])
+            changed = True
+        else:
+            existing_backends.add(host)
+    for host, name in nbviewers.items():
+        if host not in existing_backends:
+            ip, port = host
+            print("Adding backend %s %s:%i", name, ip, port)
+            f.add_backend(name, ip, port, copy_backend)
+            changed = True
+
+    if changed:
+        print("Activating fastly configuration %s" % f.version)
+        f.deploy()
+    else:
+        print("Fastly OK")
