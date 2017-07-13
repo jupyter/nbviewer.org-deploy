@@ -22,6 +22,7 @@ import json
 import os
 import pipes
 import re
+import socket
 import sys
 import time
 join = os.path.join
@@ -34,6 +35,7 @@ import requests
 
 NBVIEWER = 'jupyter/nbviewer'
 NBCACHE = 'jupyter/nbcache'
+LOGENTRIES = 'logentries/docker-logentries'
 NODE_FLAVOR = 'general1-2'
 HERE = os.path.dirname(os.path.abspath(__file__))
 MACHINE_DIR = 'machine'
@@ -154,6 +156,17 @@ def nbcache(ctx):
     run("docker run -d --label nbcache --name nbcache --restart always %s" % NBCACHE)
 
 @task
+def logentries(ctx):
+    """Start the logentries log-forwarding service"""
+    run("docker run -d --label logentries --name logentries --restart always "
+        "-v /var/run/docker.sock:/var/run/docker.sock "
+        "%s -t %s --no-stats -j -a host=%s" % (
+            LOGENTRIES, creds['LOGENTRIES_TOKEN'],
+            os.environ.get('DOCKER_MACHINE_NAME', socket.gethostname())
+        )
+    )
+
+@task
 def nbviewer(ctx, port=0, image='nbviewer'):
     """Start one nbviewer instance"""
     docker = docker_client()
@@ -210,6 +223,7 @@ def bootstrap(ctx, n=2):
     pull(ctx)
     build(ctx)
     nbcache(ctx)
+    logentries(ctx)
     ports = []
     for i in range(n):
         ports.append(nbviewer(ctx))
