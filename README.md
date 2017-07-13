@@ -58,10 +58,26 @@ To see the names and ips of current nbviewer servers:
 
     invoke servers
 
+### Adding a node
+
+    invoke add_node
+
+will allocate a new node with `docker-machine`,
+start nbviewer on it, and add it to fastly.
+
+Remember to commit the changes to the `machine` credentials directory when you do this.
+
+### Removing a node
+
+    invoke remove_node nbviewer-1
+
+will teardown a server and remove it from fastly.
+
+Remember to commit the changes to the `machine` credentials directory when you do this.
 
 ## Running nbviewer with docker
 
-The commands below talk to docker directly, and are to be run with access
+The commands below talk to a single docker instance, and are to be run with access
 to docker, either directly or via `docker-machine`.
 
 ### Booting from scratch
@@ -95,3 +111,10 @@ To relaunch the current instances without any other changes:
 invoke restart
 ```
 
+
+## TODO
+
+- Fastly is scripted now, but we could do better.
+  In particular, we could prevent fastly from ever pointing to stopped or restarting instances
+  by removing them from fastly *before* tearing down the instances.
+  Similarly, `upgrade` could create new containers to avoid brief downtime instead of recreating containers in-place.

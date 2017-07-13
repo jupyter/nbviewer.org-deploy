@@ -100,11 +100,14 @@ def add_node(ctx):
         eval $(docker-machine env %s)
         invoke bootstrap
     """ % name, echo=True)
+    # add it to fastly
+    fastly(ctx)
 
 @task
-def remove_machine(ctx, name):
+def remove_node(ctx, name):
     """Remove a docker machine"""
     ctx.run('docker-machine rm %s' % name)
+    fastly(ctx)
 
 @task
 def env(ctx, name):
