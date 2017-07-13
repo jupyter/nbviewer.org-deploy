@@ -20,8 +20,8 @@ publishing the latest version of nbviewer can be done with one command from this
 
 This will:
 
-    1. `git pull`
-    2. `invoke upgrade` on each nbviewer instance, via docker-machine
+1. `git pull`
+2. `invoke upgrade` on each nbviewer instance, via docker-machine
 
 There will be a confirmation prompt once it gets to the destructive action of destroying previous containers and starting new ones.
 
@@ -34,6 +34,8 @@ started with
 
     invoke statuspage
 
+Each server is forwarding its logs to `logentries`, as well.
+
 ## Dependencies
 
 Python dependencies:
@@ -43,7 +45,7 @@ Python dependencies:
 
 ## Managing nbviewer servers
 
-nbviewer servers are hosted on Rackspace and
+nbviewer servers are hosted on Rackspace and created with `docker-machine`.
 The credentials are stored in this repo in the `machine` directory.
 
 There are a few commands that can be run from your laptop,
@@ -83,7 +85,7 @@ invoke upgrade
 
 This will pull new images from DockerHub, take down containers one at a time, and bring new ones up in their places.
 
-TODO: we should actually bring up new nodes on *new* ports and add them to fastly before removing the old ones.
+TODO: we should actually bring up new nodes on *new* ports and add them to fastly before removing the old ones. This should be doable now that fastly is scripted.
 
 ### Restart
 
