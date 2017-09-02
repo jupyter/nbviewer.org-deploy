@@ -401,7 +401,7 @@ class FastlyService:
 
 
 def all_instances():
-    """Return {(ip, port) : name} for all nbviewer containers on all machines"""
+    """Return {(ip, port) : name} for all running nbviewer containers on all machines"""
     all_nbviewers = {}
     docker_machine = Machine()
     for m in docker_machine.ls():
@@ -412,6 +412,21 @@ def all_instances():
         ip = docker_machine.inspect(name)['Driver']['IPAddress']
         docker = Client(**docker_machine.config(name))
         for c in docker.containers(filters={'label': 'nbviewer'}, all=True):
+            container_name = c['Names'][0].lstrip('/')
+            if c['State'] != 'running':
+                print((
+                    "{container} on {machine} is stopped (state={state})!\n"
+                    "You may want to start it manually with:\n"
+                    "    eval $(invoke env {machine})\n"
+                    "    docker start {container}\n"
+                    "or inspect the logs with:\n"
+                    "    eval $(invoke env {machine})\n"
+                    "    docker logs --tail 100 {container}\n"
+                ).format(
+                    container=container_name, machine=m['Name'], state=c['State'],
+                ))
+                continue
+
             port = c['Ports'][0]['PublicPort']
             all_nbviewers[(ip, port)] = '%s-%s' % (name, port)
     return all_nbviewers
