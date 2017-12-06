@@ -67,7 +67,7 @@ def nbviewer_servers():
 
 @task
 def trigger_build(ctx):
-    url_base = "https://registry.hub.docker.com/u/jupyter/nbviewer/trigger/{}/" 
+    url_base = "https://registry.hub.docker.com/u/jupyter/nbviewer/trigger/{}/"
     requests.post(url=url_base.format(creds['DOCKER_TRIGGER_TOKEN']), data="build=true")
 
 @task
