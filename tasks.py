@@ -193,7 +193,7 @@ def nbviewer(ctx, port=0, image='nbviewer'):
         port = 8080
         while port in ports_in_use:
             port += 1
-    
+
     run(' '.join(map(pipes.quote, ['docker', 'run', '-d',
         '--env-file', 'env_file',
         '--label', 'nbviewer',
@@ -208,7 +208,7 @@ def nbviewer(ctx, port=0, image='nbviewer'):
         '--port=8080',
         '--cache_expiry_min=3600',
         '--cache_expiry_max=14400',
-        "--content_security_policy='connect-src *'", # https://github.com/jupyter/nbviewer/issues/797
+        "--content_security_policy=connect-src *", # https://github.com/jupyter/nbviewer/issues/797
     ])), echo=True)
     return port
 
