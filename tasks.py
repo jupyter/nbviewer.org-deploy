@@ -208,8 +208,9 @@ def nbviewer(ctx, port=0, image='nbviewer'):
         '--port=8080',
         '--cache_expiry_min=3600',
         '--cache_expiry_max=14400',
-        "--content_security_policy=connect-src *", # https://github.com/jupyter/nbviewer/issues/797        
-        '--ipywidgets_version_spec=0.15', # https://github.com/jupyter/nbviewer/issues/818
+        "--content_security_policy=connect-src *", # https://github.com/jupyter/nbviewer/issues/797    
+        '--jupyter_js_widgets_version=2.1', # https://github.com/jupyter/nbviewer/issues/818
+        '--jupyter_widgets_html_manager_version=0.15', # https://github.com/jupyter/nbviewer/issues/818
     ])), echo=True)
     return port
 
