@@ -187,7 +187,7 @@ def nbviewer(ctx, port=0, image='nbviewer'):
     ports_in_use = set()
     for c in nbviewers:
         for port_struct in c['Ports']:
-            ports_in_use.add(port_struct['PublicPort'])
+            ports_in_use.add(port_struct.get('PublicPort'))
     
     if port == 0:
         port = 8080
@@ -273,10 +273,10 @@ def upgrade(ctx, yes=False):
     ports = []
     for running in containers:
         interface = running['Ports'][0]
-        ip = interface['IP']
+        ip = interface.get('IP')
         if ip == '0.0.0.0':
             ip = ctx.run('docker-machine ip $(docker-machine active)', hide='out').stdout.strip()
-        port = interface['PublicPort']
+        port = interface.get('PublicPort')
         id = running['Id']
         print("Relaunching %s at %s:%i" % (id[:7], ip, port))
         docker.stop(id)
@@ -430,7 +430,7 @@ def all_instances():
                 ))
                 continue
 
-            port = c['Ports'][0]['PublicPort']
+            port = c['Ports'][0].get('PublicPort')
             all_nbviewers[(ip, port)] = '%s-%s' % (name, port)
     return all_nbviewers
 
