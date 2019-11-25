@@ -1,4 +1,6 @@
 rackspacesdk
+# rackspace sdk isn't compatible with openstack > 0.17 yet
+openstacksdk==0.17.*
 invoke>=0.13
 docker
 requests
