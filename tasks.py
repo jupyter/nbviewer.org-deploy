@@ -85,7 +85,7 @@ def new_machine(ctx):
     env['OS_FLAVOR_ID'] = NODE_FLAVOR
     
     rc = rackspace_client()
-    images = [ image for image in rc.compute.images() if 'Ubuntu 16.04' in image.name]
+    images = [ image for image in rc.compute.images() if 'Ubuntu 18.04' in image.name]
     image = [ image for image in images if 'PVHVM' in image.name][0]
     env['OS_IMAGE_ID'] = image.id
     env['OS_REGION_NAME'] = "DFW"
