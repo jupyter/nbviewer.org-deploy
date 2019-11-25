@@ -456,7 +456,7 @@ def fastly(ctx):
     for host, name in nbviewers.items():
         if host not in existing_backends:
             ip, port = host
-            print("Adding backend %s %s:%i", name, ip, port)
+            print("Adding backend %s %s:%i" % (name, ip, port))
             f.add_backend(name, ip, port, copy_backend)
             changed = True
 
