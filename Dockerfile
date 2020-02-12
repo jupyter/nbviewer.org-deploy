@@ -1,5 +1,5 @@
 FROM jupyter/nbviewer
 USER root
-RUN pip install 'newrelic==3.2.0.91' 'tornado<5'
+RUN pip install 'newrelic==5.6.0.135'
 USER nobody
 ADD newrelic.ini newrelic.ini
