@@ -67,8 +67,10 @@ def nbviewer_servers():
 
 @task
 def trigger_build(ctx):
-    url_base = "https://registry.hub.docker.com/u/jupyter/nbviewer/trigger/{}/"
-    requests.post(url=url_base.format(creds['DOCKER_TRIGGER_TOKEN']), data="build=true")
+    url_base = "https://hub.docker.com/api/build/v1/source/579ab043-912f-425b-8b3f-765ee6143b53/trigger/{}/call/"
+    r = requests.post(url=url_base.format(creds['DOCKER_TRIGGER_TOKEN']))
+    r.raise_for_status()
+    print(r.text)
 
 @task
 def new_machine(ctx):
