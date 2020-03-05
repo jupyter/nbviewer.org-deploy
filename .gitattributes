@@ -1,0 +1,5 @@
+secrets/** filter=git-crypt diff=git-crypt
+creds filter=git-crypt diff=git-crypt
+newrelic.ini filter=git-crypt diff=git-crypt
+env_* filter=git-crypt diff=git-crypt
+machine/** filter=git-crypt diff=git-crypt
