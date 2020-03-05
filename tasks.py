@@ -409,6 +409,8 @@ def all_instances():
     """Return {(ip, port) : name} for all running nbviewer containers on all machines"""
     all_nbviewers = {}
     docker_machine = Machine()
+    # add ovh by hand
+    all_nbviewers[('in51bdkev0.lb.c1.gra.k8s.ovh.net', 80)] = 'ovh'
     for m in docker_machine.ls():
         name = m['Name']
         if not name:
@@ -448,7 +450,7 @@ def fastly(ctx):
     # first, delete the backends we don't want
     copy_backend = backends[0]
     for backend in backends:
-        host = (backend['ipv4'], backend['port'])
+        host = (backend['address'], backend['port'])
         if host not in nbviewers:
             print("Deleting backend %s" % backend['name'])
             f.remove_backend(backend['name'])
