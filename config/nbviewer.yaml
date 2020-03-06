@@ -1,7 +1,10 @@
 replicas: 3
 
+image: jupyter/nbviewer:c23e6be3
+
 extraEnv:
   GOOGLE_ANALYTICS_ID: UA-52617120-5
+
 nbviewer:
   extraArgs:
   - '--cache_expiry_min=3600'
