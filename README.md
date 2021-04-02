@@ -46,6 +46,9 @@ This will deploy the new helm configuration
 ## TODO
 
 - Fastly is scripted now, but we could do better.
-  In particular, we could prevent fastly from ever pointing to stopped or restarting instances
-  by removing them from fastly *before* tearing down the instances.
-  Similarly, `upgrade` could create new containers to avoid brief downtime instead of recreating containers in-place.
+  Load-balancer DNS/ip is hardcoded in tasks.py and must be updated if changed.
+  See the output of `kubectl get svc` for the current ip address,
+  and update with `invoke fastly`.
+
+- cdn.jupyter.org is proxied through Cloudflare DNS.
+  Changes to ip require manual update at https://
