@@ -130,10 +130,9 @@ class FastlyService:
 def all_instances():
     """Return {(ip, port) : name} for all running nbviewer containers on all machines"""
     all_nbviewers = {}
-    docker_machine = Machine()
     # add ovh by hand
     # TODO: get service from kubernetes
-    all_nbviewers[('in51bdkev0.lb.c1.gra.k8s.ovh.net', 80)] = 'ovh'
+    all_nbviewers[('135.125.85.26', 80)] = 'ovh'
     return all_nbviewers
 
 
