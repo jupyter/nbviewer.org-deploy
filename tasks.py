@@ -132,7 +132,7 @@ def all_instances():
     all_nbviewers = {}
     # add ovh by hand
     # TODO: get service from kubernetes
-    all_nbviewers[('135.125.85.26', 80)] = 'ovh'
+    all_nbviewers[('135.125.83.237', 80)] = 'ovh'
     return all_nbviewers
 
 
