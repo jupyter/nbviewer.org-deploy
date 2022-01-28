@@ -1,26 +1,21 @@
 # nbviewer.org-deploy
 
-Tasks for running nbviewer.jupyter.org in helm, with [invoke](http://pyinvoke.org).
+Tasks for running nbviewer.org in helm, with [invoke](http://pyinvoke.org).
 
-TODO: helm commands have not yet been implemented.
+**TODO: helm automatiion have not yet been implemented,
+but are current run via `deploy.sh`.
+This assumes the `nbviewer` repo is adjacent to this repo
+and up-to-date.**
 
 ## Quickstart: upgrading nbviewer
 
-First, get what you need to run the invoke tasks:
+Currently assumes you have helm, kubectl
 
-    pip install -r requirements.txt
+1. clone nbviewer: `git clone https://github.com/jupyter/nbviewer`
+2. clone this repo: `git clone https://github.com/jupyter/nbviewer.org-deploy`
+3. Run helm upgrade `cd nbviewer.org-deploy; bash deploy.sh`
 
-Assuming you have access to everything,
-publishing the latest version of nbviewer can be done with one command from this repo:
-
-    invoke doitall
-
-This will: TODO
-
-1. `git pull`
-2. `invoke upgrade` on each nbviewer instance, via docker-machine
-
-There will be a confirmation prompt once it gets to the destructive action of destroying previous containers and starting new ones.
+**NOTE: The invoke tasks.py has not been updated**
 
 ## Current deployment
 
@@ -51,4 +46,4 @@ This will deploy the new helm configuration
   and update with `invoke fastly`.
 
 - cdn.jupyter.org is proxied through Cloudflare DNS.
-  Changes to ip require manual update at https://
+  Changes to ip require manual update at https://dash.cloudflare.com/dns.
