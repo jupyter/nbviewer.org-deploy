@@ -7,11 +7,11 @@ extraEnv:
 
 nbviewer:
   extraArgs:
-  - '--cache_expiry_min=3600'
-  - '--cache_expiry_max=14400'
-  - "--content_security_policy=connect-src *" # https://github.com/jupyter/nbviewer/issues/797
-  - '--jupyter_js_widgets_version=2.1' # https://github.com/jupyter/nbviewer/issues/818
-  - '--jupyter_widgets_html_manager_version=0.15' # https://github.com/jupyter/nbviewer/issues/818
+  - '--cache-expiry-min=3600'
+  - '--cache-expiry-max=14400'
+  - "--content-security-policy=connect-src *" # https://github.com/jupyter/nbviewer/issues/797
+  - '--jupyter-js-widgets-version=2.1' # https://github.com/jupyter/nbviewer/issues/818
+  - '--jupyter-widgets-html-manager-version=0.15' # https://github.com/jupyter/nbviewer/issues/818
 
 statuspage:
   enabled: true
