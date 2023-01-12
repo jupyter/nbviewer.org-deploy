@@ -1,6 +1,6 @@
 replicas: 3
 
-image: jupyter/nbviewer:82085b5
+image: jupyter/nbviewer:8b013f7
 
 extraEnv:
   GOOGLE_ANALYTICS_ID: UA-52617120-5
