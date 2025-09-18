@@ -1,9 +1,6 @@
 replicas: 3
 
-image: jupyter/nbviewer:8b013f7
-
-extraEnv:
-  GOOGLE_ANALYTICS_ID: UA-52617120-5
+image: jupyter/nbviewer:efc7e78
 
 nbviewer:
   extraArgs:
@@ -12,6 +9,10 @@ nbviewer:
   - "--content-security-policy=connect-src *" # https://github.com/jupyter/nbviewer/issues/797
   - '--jupyter-js-widgets-version=2.1' # https://github.com/jupyter/nbviewer/issues/818
   - '--jupyter-widgets-html-manager-version=0.15' # https://github.com/jupyter/nbviewer/issues/818
+  - >-
+    --NBViewer.extra_head_html=
+    <script defer data-domain="nbviewer.org" src="https://plausible.io/js/script.file-downloads.outbound-links.js"></script>
+    <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
 
 statuspage:
   enabled: true
