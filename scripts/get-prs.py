@@ -50,8 +50,8 @@ args = parser.parse_args()
 gh = github.Github(token)
 r = gh.get_repo(args.repo)
 
-start = extract_gitref(args.start)
-end = extract_gitref(args.end)
+start = args.start
+end = args.end
 
 prs = set()
 git_compare = r.compare(start, end)
