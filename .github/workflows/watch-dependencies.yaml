@@ -1,0 +1,106 @@
+# automatically check for updates to nbviewer
+# adapted from mybinder.org-deploy, under BSD-3-Clause lience
+name: Watch dependencies
+
+on:
+  push:
+    paths:
+      - ".github/workflows/watch-dependencies.yaml"
+  schedule:
+    # Run daily at 5am (somewhere), ref: https://crontab.guru/#0_5_*_*_*
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-nbviewer:
+    # Don't schedule runs on forks, but allow the job to execute on push and
+    # workflow_dispatch for CI development purposes.
+    if: github.repository == 'jupyter/nbviewer.org-deploy' || github.event_name != 'schedule'
+
+    runs-on: ubuntu-24.04
+    environment: watch-dependencies
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Get current versions of jupyter/nbviewer
+        id: current
+        # get the version of the image and chart repo currently being deployed
+        run: |
+          local_image=$(cat config/nbviewer.yaml | yq e '.image')
+          echo "tag=$local_image" >> $GITHUB_OUTPUT
+          local_chart=$(cat .github/workflows/cd.yml | yq e '.env.NBVIEWER_VERSION')
+          echo "chart=$local_chart" >> $GITHUB_OUTPUT
+
+      - name: Get latest versions jupyter/nbviewer
+        id: latest
+        # docker tags api sorts by date
+        # there is no version information in nbviewer image tags
+        run: |
+          latest_tag=$(
+              curl https://hub.docker.com/v2/repositories/jupyter/nbviewer/tags | jq -r '.results[0].name'
+          )
+          echo "tag=jupyter/nbviewer:$latest_tag" >> $GITHUB_OUTPUT
+          head=$(
+            git ls-remote https://github.com/jupyter/nbviewer HEAD | cut -f1
+          )
+          echo "chart=$head" >> "$GITHUB_OUTPUT"
+          echo "short=${head::7}" >> "$GITHUB_OUTPUT"
+      
+      - name: Update nbviewer image
+        if: steps.local.outputs.tag != steps.latest.outputs.tag
+        run: sed --in-place 's@${{ steps.local.outputs.tag }}@${{ steps.latest.outputs.tag }}@g' config/nbviewer.yaml
+
+      - name: Update nbviewer chart
+        if: steps.local.outputs.chart != steps.latest.outputs.chart
+        run: sed --in-place 's@${{ steps.local.outputs.chart }}@${{ steps.latest.outputs.chart }}@g' .github/workflows/cd.yml
+
+      - name: git diff
+        id: git-diff
+        run: |
+          if git --no-pager diff --color=always --exit-code; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch PR summary
+        id: prsummary
+        if: steps.git-diff.changed
+        run: |
+          pip install PyGithub
+          ./scripts/get-prs.py \
+              jupyter/nbviewer \
+              ${{ steps.local.outputs.chart }} \
+              ${{ steps.latest.outputs.chart }} \
+              --write-github-actions-output=prs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ref: https://github.com/peter-evans/create-pull-request
+      - name: Create a PR
+        uses: peter-evans/create-pull-request@v7
+        # Don't try open PRs in forks or when the job is triggered by a push to
+        # a branch other than the default branch.
+        if: github.repository == 'jupyter/nbviewer.org-deploy' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
+        with:
+          token: "${{ secrets.BOT_PAT }}"
+          author: Jupter Bot Account <bot-account@jupyter.org.local>
+          committer: JupterHub Bot Account <bot-account@jupyter.org.local>
+          branch: update-nbviewer
+          labels: dependencies
+          commit-message: Update nbviewer version to ${{ steps.latest.outputs.short }}
+          title: Update nbviewer version to ${{ steps.latest.outputs.short }}
+          body: |
+            - Updates nbviewer chart to jupyter/nbviewer@${{ steps.latest.outputs.chart }}
+            - Update nbviewer image to `${{ steps.latest.outputs.tag }}`
+
+            ${{ steps.prsummary.outputs.prs }}
+
+            ## Related
+
+            - Source code: https://github.com/jupyter/nbviewer
