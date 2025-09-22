@@ -2,6 +2,26 @@ replicas: 3
 
 image: jupyter/nbviewer:efc7e78
 
+memcached:
+  image:
+    # bitnami is retiring public images, find something else
+    repository: bitnamilegacy/memcached
+  args:
+    - memcached
+    - -vv
+    - -u memcached
+    - -p
+    - "11211"
+    - "-m"
+    - "1600"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 2Gi
+    limits:
+      cpu: 500m
+      memory: 2Gi
+
 nbviewer:
   extraArgs:
   - '--cache-expiry-min=3600'
