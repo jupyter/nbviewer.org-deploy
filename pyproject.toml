@@ -1,0 +1,9 @@
+
+[project]
+name = "nbviewer.org-deploy"
+
+[tool.pytest.ini_options]
+addopts = "-v"
+testpaths = [
+    "tests",
+]
