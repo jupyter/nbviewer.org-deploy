@@ -10,10 +10,9 @@ echo "Is $nbviewer_chart up to date?"
 helm dep up $nbviewer_chart
 
 upgrade="upgrade nbviewer $nbviewer_chart -f config/nbviewer.yaml -f secrets/config/nbviewer.yaml"
-helm diff -C 5 $upgrade
-exit 1
 
 if [[ -z "${CI:-}" ]]; then
+  helm diff -C 5 $upgrade
   echo "Deploy these changes? (y|[N]) "
   read confirm
 

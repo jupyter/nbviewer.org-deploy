@@ -22,6 +22,7 @@ env:
   KUBECTL_VERSION: "v1.29.15"
   HELM_VERSION: "v3.12.0"
   KUBECONFIG: secrets/ovh-kubeconfig.yaml
+  NBVIEWER_VERSION: "68472ab"
 
 jobs:
   # In this dedicated job to deploy our staging environment we build and push

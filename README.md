@@ -1,21 +1,41 @@
 # nbviewer.org-deploy
 
-Tasks for running nbviewer.org in helm, with [invoke](http://pyinvoke.org).
+Deployment repo for nbviewer.org
 
-**TODO: helm automatiion have not yet been implemented,
-but are current run via `deploy.sh`.
-This assumes the `nbviewer` repo is adjacent to this repo
-and up-to-date.**
+## Overview
+
+The nbviewer image and helm chart are defined in https://github.com/jupyter/nbviewer.
+The helm chart in that repo is not _published_ anywhere,
+so we use a local checkout.
+Helm upgrades are deployed via GitHub actions.
+
+Some _very_ infrequent manual tasks (interacting with the fastly cache layer) are scripted in `tasks.py` for use with `pyinvoke`.
+We're mostly trying to move away from that, but tasks are infrequent enough.
+Let's not add to them, though.
+
+## Automation progress
+
+- helm upgrade is now in `.github/workflows/cd.yml`
+- updating nbviewer is still manual (`config.yaml` and `cd.yaml`)
 
 ## Quickstart: upgrading nbviewer
 
-Currently assumes you have helm, kubectl
+nbviewer helm upgrades are deployed via github actions.
+The nbviewer version is current in two palaces:
 
-1. clone nbviewer: `git clone https://github.com/jupyter/nbviewer`
-2. clone this repo: `git clone https://github.com/jupyter/nbviewer.org-deploy`
-3. Run helm upgrade `cd nbviewer.org-deploy; bash deploy.sh`
+- the _chart_ version in `.github/workflows/cd.yml`
+- the _image_ version in `config/nbviewer.yaml`
 
-**NOTE: The invoke tasks.py has not been updated**
+To deploy an update from nbviewer to nbviewer.org:
+
+1. check the latest version of the nbviewer repo (https://github.com/jupyter/nbviewer/commits)
+2. store the latest commit in `NBVIEWER_VERSION` in [.github/workflows/cd.yaml](.github/workflows/cd.yml)
+3. check the latest tag of the [nbviewer image](https://hub.docker.com/r/jupyter/nbviewer/tags)
+4. update the tag in [config/nbviewer.yaml](config/nbviewer.yaml)
+
+Open a pull request, and it should be deployed to nbviewer.org upon merge.
+
+Generating these pull requests _should_ be automated, as is done [on mybinder.org-deploy](https://github.com/jupyterhub/mybinder.org-deploy/pull/3427).
 
 ## Current deployment
 
@@ -25,17 +45,8 @@ Right now, nbviewer is run on OVHCloud via helm in the namespace `nbviewer`.
 
 Python dependencies:
 
-    pip install -r requirements.txt
+    pip install -r requirements.in # (or requirements.txt for a locked env)
 
-### Upgrading
-
-To upgrade the deployment in-place:
-
-```
-invoke upgrade
-```
-
-This will deploy the new helm configuration
 
 ## TODO
 
