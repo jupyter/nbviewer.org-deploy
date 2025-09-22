@@ -27,7 +27,6 @@ Python dependencies:
 
     pip install -r requirements.txt
 
-
 ### Upgrading
 
 To upgrade the deployment in-place:

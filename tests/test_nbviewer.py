@@ -2,7 +2,6 @@ import pytest
 import requests
 from bs4 import BeautifulSoup
 
-
 NBVIEWER = "https://nbviewer.org"
 
 frontpage_request = requests.get(NBVIEWER)
