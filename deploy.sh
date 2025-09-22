@@ -9,7 +9,7 @@ echo "Is $PWD/../nbviewer up to date?"
 helm dep up $nbviewer_chart
 
 upgrade="upgrade nbviewer $nbviewer_chart -f config/nbviewer.yaml -f secrets/config/nbviewer.yaml"
-helm diff $upgrade
+helm diff -C 5 $upgrade
 
 echo "Deploy these changes? (y|[N]) "
 read confirm

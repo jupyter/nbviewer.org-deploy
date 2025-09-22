@@ -1,6 +1,6 @@
 replicas: 3
 
-image: jupyter/nbviewer:efc7e78
+image: jupyter/nbviewer:68472ab
 
 memcached:
   image:
