@@ -15,15 +15,15 @@ memcached:
 
 nbviewer:
   extraArgs:
-  - '--cache-expiry-min=3600'
-  - '--cache-expiry-max=14400'
-  - "--content-security-policy=connect-src *" # https://github.com/jupyter/nbviewer/issues/797
-  - '--jupyter-js-widgets-version=2.1' # https://github.com/jupyter/nbviewer/issues/818
-  - '--jupyter-widgets-html-manager-version=0.15' # https://github.com/jupyter/nbviewer/issues/818
-  - >-
-    --NBViewer.extra_head_html=
-    <script defer data-domain="nbviewer.org" src="https://plausible.io/js/script.file-downloads.outbound-links.js"></script>
-    <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+    - "--cache-expiry-min=3600"
+    - "--cache-expiry-max=14400"
+    - "--content-security-policy=connect-src *" # https://github.com/jupyter/nbviewer/issues/797
+    - "--jupyter-js-widgets-version=2.1" # https://github.com/jupyter/nbviewer/issues/818
+    - "--jupyter-widgets-html-manager-version=0.15" # https://github.com/jupyter/nbviewer/issues/818
+    - >-
+      --NBViewer.extra_head_html=
+      <script defer data-domain="nbviewer.org" src="https://plausible.io/js/script.file-downloads.outbound-links.js"></script>
+      <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
 
 statuspage:
   enabled: true

@@ -1,0 +1,17 @@
+
+[project]
+name = "nbviewer.org-deploy"
+
+[tool.pytest.ini_options]
+addopts = "-v"
+testpaths = [
+    "tests",
+]
+
+[tool.ruff.lint]
+select = [
+    "E9", # syntax
+    "I", # isort
+    "UP", # pyupgrade
+    "F", # flake8
+]

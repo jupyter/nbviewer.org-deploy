@@ -1,0 +1,77 @@
+name: Continuous Deployment
+
+# only allow one deploy workflow to be running at a time
+# serializes multiple outstanding deploys if PRs are merged before the last deploy finishes
+# ref: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency
+concurrency: deploy
+
+# Only trigger the workflow when pushing to master or a label is applied to a
+# Pull Request
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "*.md"
+      - .pre-commit-config.yaml
+      - .github/**
+      - "!.github/workflows/cd.yml"
+
+# Global environment variables
+env:
+  KUBECTL_VERSION: "v1.29.15"
+  HELM_VERSION: "v3.12.0"
+  KUBECONFIG: secrets/ovh-kubeconfig.yaml
+  NBVIEWER_VERSION: "68472ab"
+
+jobs:
+  # In this dedicated job to deploy our staging environment we build and push
+  # images that the jobs to deploy to the production environments depend on.
+  deploy:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: "Stage 1: Install dependencies"
+        run: |
+          pip install --upgrade setuptools pip
+          pip install --upgrade -r requirements.txt
+
+      - name: "Stage 1: Install kubectl ${{ env.KUBECTL_VERSION }}"
+        uses: azure/setup-kubectl@v4
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+
+      - name: "Stage 1: Install and setup helm ${{ env.HELM_VERSION }}"
+        run: |
+          curl -sf https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | DESIRED_VERSION=${HELM_VERSION} bash
+
+      - name: Unlock git-crypt secrets
+        uses: sliteteam/github-action-git-crypt-unlock@f99c0c6b60bb7ec30dcec033a8f0a3b3d48f21e1
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+
+      - name: get nbviewer chart
+        run: |
+          git clone https://github.com/jupyter/nbviewer
+          cd nbviewer
+          git reset "${NBVIEWER_VERSION}" --hard
+          git log -1
+
+      - name: deploy
+        run: |
+          bash deploy.sh
+
+      - name: "Test"
+        run: |
+          pytest

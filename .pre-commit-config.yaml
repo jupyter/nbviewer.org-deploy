@@ -1,0 +1,31 @@
+exclude: "(.*/)?secrets/.*"
+
+ci:
+  # pre-commit.ci will open PRs updating our hooks once a month
+  autoupdate_schedule: monthly
+
+repos:
+  # autoformat and lint Python code
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.1
+    hooks:
+      - id: ruff
+        types_or:
+          - python
+        args: ["--fix", "--show-fixes"]
+      - id: ruff-format
+        types_or:
+          - python
+
+  # Autoformat: markdown, yaml, javascript (see the file .prettierignore)
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.6.2
+    hooks:
+      - id: prettier
+
+  # Autoformat and linting, misc. details
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: check-executables-have-shebangs
