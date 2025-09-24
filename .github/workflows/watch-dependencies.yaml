@@ -66,10 +66,9 @@ jobs:
         if: github.repository == 'jupyter/nbviewer.org-deploy' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
         with:
           token: "${{ secrets.BOT_PAT }}"
-          author: Jupter Bot Account <bot-account@jupyter.org.local>
-          committer: JupterHub Bot Account <bot-account@jupyter.org.local>
+          author: Jupyter Bot Account <bot-account@jupyter.org.local>
+          committer: Jupyter Bot Account <bot-account@jupyter.org.local>
           branch: update-nbviewer
-          labels: dependencies
           commit-message: Update nbviewer version to ${{ steps.update.outputs.chart_short }}
           title: Update nbviewer version to ${{ steps.update.outputs.chart_short }}
           body: |
