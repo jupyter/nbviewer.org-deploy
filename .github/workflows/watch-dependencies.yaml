@@ -31,7 +31,7 @@ jobs:
       - name: install requirements
         run: |
           pip install -r requirements.txt
- 
+
       - name: Check for nbviewer updates
         id: update
         run: |

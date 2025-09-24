@@ -13,15 +13,30 @@ Some _very_ infrequent manual tasks (interacting with the fastly cache layer) ar
 We're mostly trying to move away from that, but tasks are infrequent enough.
 Let's not add to them, though.
 
-## Automation progress
+## Automation
 
-- helm upgrade is now in `.github/workflows/cd.yml`
-- updating nbviewer is still manual (`config.yaml` and `cd.yaml`)
+- helm upgrade happens when PRs are merged in `.github/workflows/cd.yml`
+- The nbviewer repo is automatically checked for updates in `.github/workflows/watch-dependencies`
 
 ## Quickstart: upgrading nbviewer
 
-nbviewer helm upgrades are deployed via github actions.
-The nbviewer version is current in two palaces:
+nbviewer publishes its images automatically.
+If a change you want to deploy was merged recently,
+make sure to wait for the image to be published to Docker Hub
+(takes a few minutes).
+
+Checking for nbviewer updates and deploying to nbviewer.org is done automatically every day.
+
+To manually run a check for the latest version of nbviewer, run the [watch-dependencies](https://github.com/jupyter/nbviewer.org-deploy/actions/workflows/watch-dependencies.yaml) action.
+This should open a PR with any changes.
+
+You can also check for updates manually with `python3 scripts/update-nbviewer.py`, and open a PR yourself.
+
+When that PR is merged, the updated nbviewer will be deployed.
+
+### Upgrading details
+
+The nbviewer version is current in two places:
 
 - the _chart_ version in `.github/workflows/cd.yml`
 - the _image_ version in `config/nbviewer.yaml`
@@ -33,9 +48,9 @@ To deploy an update from nbviewer to nbviewer.org:
 3. check the latest tag of the [nbviewer image](https://hub.docker.com/r/jupyter/nbviewer/tags)
 4. update the tag in [config/nbviewer.yaml](config/nbviewer.yaml)
 
-Open a pull request, and it should be deployed to nbviewer.org upon merge.
+These steps are scripted in `scripts/update-nbviewer.py`.
 
-Generating these pull requests _should_ be automated, as is done [on mybinder.org-deploy](https://github.com/jupyterhub/mybinder.org-deploy/pull/3427).
+Open a pull request, and it should be deployed to nbviewer.org upon merge.
 
 ## Current deployment
 
@@ -46,7 +61,6 @@ Right now, nbviewer is run on OVHCloud via helm in the namespace `nbviewer`.
 Python dependencies:
 
     pip install -r requirements.in # (or requirements.txt for a locked env)
-
 
 ## TODO
 
