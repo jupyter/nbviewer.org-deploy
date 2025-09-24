@@ -1,0 +1,83 @@
+# automatically check for updates to nbviewer
+# adapted from mybinder.org-deploy, under BSD-3-Clause license
+name: Watch dependencies
+
+on:
+  push:
+    paths:
+      - ".github/workflows/watch-dependencies.yaml"
+  schedule:
+    # Run daily at 5am (somewhere), ref: https://crontab.guru/#0_5_*_*_*
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-nbviewer:
+    # Don't schedule runs on forks, but allow the job to execute on push and
+    # workflow_dispatch for CI development purposes.
+    if: github.repository == 'jupyter/nbviewer.org-deploy' || github.event_name != 'schedule'
+
+    runs-on: ubuntu-24.04
+    environment: watch-dependencies
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: install requirements
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check for nbviewer updates
+        id: update
+        run: |
+          python3 scripts/update-nbviewer.py
+
+      - name: git diff
+        id: git-diff
+        run: |
+          if git --no-pager diff --color=always --exit-code; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch PR summary
+        id: prsummary
+        if: steps.git-diff.changed
+        run: |
+          ./scripts/get-prs.py \
+              jupyter/nbviewer \
+              ${{ steps.update.outputs.chart_before }} \
+              ${{ steps.update.outputs.chart_after }} \
+              --write-github-actions-output=prs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ref: https://github.com/peter-evans/create-pull-request
+      - name: Create a PR
+        uses: peter-evans/create-pull-request@v7
+        # Don't try open PRs in forks or when the job is triggered by a push to
+        # a branch other than the default branch.
+        if: github.repository == 'jupyter/nbviewer.org-deploy' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
+        with:
+          token: "${{ secrets.BOT_PAT }}"
+          author: Jupter Bot Account <bot-account@jupyter.org.local>
+          committer: JupterHub Bot Account <bot-account@jupyter.org.local>
+          branch: update-nbviewer
+          labels: dependencies
+          commit-message: Update nbviewer version to ${{ steps.update.outputs.chart_short }}
+          title: Update nbviewer version to ${{ steps.update.outputs.chart_short }}
+          body: |
+            - Updates nbviewer chart to jupyter/nbviewer@${{ steps.update.outputs.chart_after }}
+            - Update nbviewer image to `${{ steps.update.outputs.image_tag }}`
+
+            ${{ steps.prsummary.outputs.prs }}
+
+            ## Related
+
+            - Source code: https://github.com/jupyter/nbviewer

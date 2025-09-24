@@ -8,8 +8,14 @@ beautifulsoup4==4.13.5
     # via -r requirements.in
 certifi==2025.8.3
     # via requests
+cffi==2.0.0
+    # via
+    #   cryptography
+    #   pynacl
 charset-normalizer==3.4.3
     # via requests
+cryptography==46.0.1
+    # via pyjwt
 idna==3.10
     # via requests
 iniconfig==2.1.0
@@ -18,15 +24,31 @@ packaging==25.0
     # via pytest
 pluggy==1.6.0
     # via pytest
+pycparser==2.23
+    # via cffi
+pygithub==2.8.1
+    # via -r requirements.in
 pygments==2.19.2
     # via pytest
+pyjwt[crypto]==2.10.1
+    # via pygithub
+pynacl==1.6.0
+    # via pygithub
 pytest==8.4.2
     # via -r requirements.in
-requests==2.32.5
+pyyaml==6.0.2
     # via -r requirements.in
+requests==2.32.5
+    # via
+    #   -r requirements.in
+    #   pygithub
 soupsieve==2.8
     # via beautifulsoup4
 typing-extensions==4.15.0
-    # via beautifulsoup4
+    # via
+    #   beautifulsoup4
+    #   pygithub
 urllib3==2.5.0
-    # via requests
+    # via
+    #   pygithub
+    #   requests
