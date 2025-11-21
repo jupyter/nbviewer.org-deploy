@@ -21,7 +21,7 @@ env:
   KUBECTL_VERSION: "v1.29.15"
   HELM_VERSION: "v3.12.0"
   KUBECONFIG: secrets/ovh-kubeconfig.yaml
-  NBVIEWER_VERSION: "e6591a2c29cd150b4881fd23ba865100bcd63634"
+  NBVIEWER_VERSION: "a53d108134e34e073344c1e2c6006a2eee86433a"
   NBVIEWER_CHART: nbviewer/helm-chart/nbviewer
 
 jobs:
