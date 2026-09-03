@@ -7,9 +7,26 @@ updates:
       - dependency-type: all
     schedule:
       interval: "monthly"
+    groups:
+      # one big pull request for minor bumps
+      minor:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 3
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      # group official actions updates
+      actions:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 3
