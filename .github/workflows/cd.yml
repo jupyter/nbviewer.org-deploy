@@ -32,19 +32,19 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Checkout nbviewer
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: jupyter/nbviewer
           ref: ${{ env.NBVIEWER_VERSION }}
           path: nbviewer
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
@@ -55,7 +55,7 @@ jobs:
           pip install --upgrade -r requirements.txt
 
       - name: Install kubectl
-        uses: azure/setup-kubectl@v4
+        uses: azure/setup-kubectl@v5
         with:
           version: ${{ env.KUBECTL_VERSION }}
 
