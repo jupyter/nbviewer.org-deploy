@@ -30,7 +30,7 @@ pygithub==2.8.1
     # via -r requirements.in
 pygments==2.19.2
     # via pytest
-pyjwt[crypto]==2.10.1
+pyjwt[crypto]==2.13.0
     # via pygithub
 pynacl==1.6.2
     # via pygithub
