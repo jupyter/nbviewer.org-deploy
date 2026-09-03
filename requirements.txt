@@ -32,7 +32,7 @@ pygments==2.19.2
     # via pytest
 pyjwt[crypto]==2.10.1
     # via pygithub
-pynacl==1.6.0
+pynacl==1.6.2
     # via pygithub
 pytest==8.4.2
     # via -r requirements.in
